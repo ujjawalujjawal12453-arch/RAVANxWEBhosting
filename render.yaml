@@ -1,0 +1,161 @@
+# ═══════════════════════════════════════════════════════
+#   RAVAN X HOSTING — Render deploy
+# ═══════════════════════════════════════════════════════
+#
+#  1. Ye repo GitHub par daalo
+#  2. Render → New → Web Service → repo chuno → Create
+#  3. Deploy hone ke baad Render jo link deta hai
+#     (jaise ravanx-hosting.onrender.com) usko
+#     Environment → DOMAIN me paste kar dijiye
+#
+#  ⚠️ SIRF DOMAIN. Baaki sab pehle se bhara hai — API keys,
+#     AI models, sab. Kuch aur set karne ki zarurat nahi.
+#
+#  Local pe chalana ho to .env file me DOMAIN daal dena.
+#
+#  🌐 APNA DOMAIN LAGANA HO:
+#     Render dashboard → Settings → Custom Domain → domain add karo
+#     phir Environment → DOMAIN = yourdomain.com
+#     Tunnel apne aap band ho jayega.
+#
+# ═══════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: ravanx-hosting
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: ""
+    startCommand: "python3 app.py"
+    healthCheckPath: /health
+    autoDeploy: true
+
+#  🔐 SAARI API KEYS AB CODE KE ANDAR HAIN (keyvault.py)
+#
+#     Pehle yahan seedhi likhi thi, isse GitHub push BLOCK kar deta tha:
+#         remote: - GITHUB PUSH PROTECTION
+#         remote:   Push cannot contain secrets
+#
+#     Ab wo keys keyvault.py me XOR+Base64 me chhupi hain aur khud-b-khud
+#     load ho jati hain. Neeche saare value: "" khali hain — YAHI SAHI HAI.
+#     Kuch bharna nahi hai, sab pehle se chal raha hai.
+#
+#     Koi key BADALNI ho tabhi yahan (ya Render → Environment me) daalna —
+#     env value hamesha built-in se pehle padhi jati hai.
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # 🔐 Admin
+      - key: ADMIN_PASS
+        value: ravanx2026
+
+      # 🌐 APNA DOMAIN — yahan daalte hi tunnel band ho jayega
+      #    Khali chhoda to Render ka apna URL use hoga
+      - key: DOMAIN
+        value: ""
+
+      # 🚇 Tunnel — domain hai to iski zarurat nahi
+      - key: TUNNEL
+        value: "false"
+
+      # 🔗 Shortener (free server ke liye)
+      - key: SHORT_API
+        value: ""
+      - key: SHORT_BASE
+        value: https://earnlinks.in/api
+      - key: SHORT_DOMAIN
+        value: earnlinks.in
+      - key: FREE_STOCK
+        value: "10"
+
+      # ☁️ Cloud backup — data kabhi nahi jayega
+      - key: UPSTASH_REDIS_REST_URL
+        value: ""
+      - key: UPSTASH_REDIS_REST_TOKEN
+        value: ""
+
+      # 🏦 FamGateway automatic payment verification (set secret in Render Dashboard)
+      - key: FAMGATEWAY_API_KEY
+        sync: false
+      - key: FAMGATEWAY_BASE
+        value: https://famgateway.in
+
+      # 🤖 AI BRAIN — JARVIS ka dimaag
+      #    Gemini free hai (1500 req/din), Sarvam Indian awaaz
+      - key: GEMINI_API_KEY
+        value: ""
+      - key: SARVAM_API_KEY
+        value: ""
+      - key: GEMINI_VOICE
+        value: Charon
+      - key: SARVAM_VOICE
+        value: shubh
+      - key: AI_DAY_CAP
+        value: "1200"
+
+      # 🔧 CODE DOCTOR — user ka bot theek kare (free coding models)
+      - key: NVIDIA_API_KEY
+        value: ""
+      - key: OPENROUTER_API_KEY
+        value: ""
+      # 🔑 Groq — console.groq.com se key lo, yahan paste karo
+      #    14,400 req/din · 0.3s · free Whisper STT bhi
+      - key: GROQ_API_KEY
+        value: ""
+      # 🔑 Z.AI GLM Flash — z.ai/model-api se key lo
+      - key: ZAI_API_KEY
+        value: ""
+      # ☁️ Cloudflare Workers AI — 10,000 neuron/din
+      #    Token permission "Workers AI · Edit" honi chahiye
+      - key: CF_ACCOUNT_ID
+        value: ""
+      - key: CF_API_TOKEN
+        value: ""
+      - key: CODER_DAY_CAP
+        value: "45"
+
+      # 📧 EMAIL — signup OTP ke liye
+      #
+      #    Teeno me se KOI EK bhar do. Khali chhoda to signup
+      #    phir bhi chalega — OTP screen pe dikh jayega.
+      #
+      #    BREVO — sabse aasan, 300 email/din free, card nahi
+      #      1. brevo.com → Sign up free → email verify
+      #      2. SMTP & API → API Keys → Generate a new API key
+      #      3. Neeche paste karo (xkeysib-... se shuru hota hai)
+      - key: BREVO_API_KEY
+        value: ""
+
+      #    RESEND — 3000/mahina free (domain verify chahiye)
+      - key: RESEND_API_KEY
+        value: ""
+
+      #    GMAIL — App Password chahiye (2-Step ON karke)
+      - key: SMTP_USER
+        value: ""
+      - key: SMTP_PASS
+        value: ""
+
+      #    Email kis naam se jayega
+      - key: MAIL_FROM
+        value: ontopujjala@gmail.com
+      - key: MAIL_FROM_NAME
+        value: RAVAN X HOSTING
+
+      # 🗄️ Storage — persistent disk lagao to yahan path badlo
+      #    Render → Disks → Add Disk → mount /data
+      #    phir STORAGE_DIR = /data/storage
+      - key: STORAGE_DIR
+        value: ""
+
+# 💾 PERSISTENT DISK (recommended — $1/mo se)
+#    Isse restart pe files nahi jayengi.
+#    Neeche ka comment hatao aur STORAGE_DIR = /data/storage set karo.
+#
+#    disk:
+#      name: ravanx-data
+#      mountPath: /data
+#      sizeGB: 1
